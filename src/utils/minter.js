@@ -8,7 +8,7 @@ const client = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0");
 export const createEvent = async (
   minterContract,
   performActions,
-  { name, quantity, price, description, ipfsImage }
+  { title, quantity, price, description, ipfsImage }
 ) => {
   await performActions(async (kit) => {
     if (!name || !description || !ipfsImage) return;
