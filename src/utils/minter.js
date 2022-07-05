@@ -11,7 +11,7 @@ export const createEvent = async (
   { title, quantity, price, description, ipfsImage }
 ) => {
   await performActions(async (kit) => {
-    if (!name || !description || !ipfsImage) return;
+    if (!title || !description || !ipfsImage) return;
     const { defaultAccount } = kit;
 
     try {
