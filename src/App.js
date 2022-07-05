@@ -1,5 +1,5 @@
 import { useContractKit } from "@celo-tools/use-contractkit";
-import React from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 import ConnectWallet from "./components/ConnectWallet";
 import Footer from "./components/Footer";
@@ -11,6 +11,7 @@ function App() {
   const { address } = useContractKit();
   const mintContract = useMinterContract();
   const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const getAllEvents = useCallback(async () => {
     try {
