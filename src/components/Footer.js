@@ -16,6 +16,7 @@ export default function Footer({ addEvent, currentTab, changeTab }) {
           onClick={function () {
             if (!address) {
               errorToast("Connect wallet to continue");
+              return;
             }
             changeTab("home");
           }}
@@ -28,6 +29,7 @@ export default function Footer({ addEvent, currentTab, changeTab }) {
           onClick={function () {
             if (!address) {
               errorToast("Connect wallet to continue");
+              return;
             }
             setCreateEventModal(!createEventModal);
           }}
@@ -39,6 +41,7 @@ export default function Footer({ addEvent, currentTab, changeTab }) {
           onClick={function () {
             if (!address) {
               errorToast("Connect wallet to continue");
+              return;
             }
             changeTab("tickets");
           }}
