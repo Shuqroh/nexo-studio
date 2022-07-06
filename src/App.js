@@ -26,6 +26,8 @@ function App() {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState("home");
+  
+  const filterTicketByCurrentUser = tickets != null && address ? tickets.filter((item) => item.owner === address) : [];
 
   const getTicket = async (data) => {
     if (
@@ -145,11 +147,11 @@ function App() {
               )}
               {tab === "tickets" && (
                 <>
-                  {!loading && address && tickets && tickets.length > 0 ? (
+                  {!loading && address && filterTicketByCurrentUser && filterTicketByCurrentUser.length > 0 ? (
                     <div className="flex flex-col px-6 mt-20">
                       <h4 className="mb-6">All tickets</h4>
                       <div className="grid grid-cols-1  md:grid-cols-2 gap-10">
-                        {tickets.map((ticket, index) => (
+                        {filterTicketByCurrentUser.map((ticket, index) => (
                           <TicketCard
                             ticket={ticket}
                             events={events}
