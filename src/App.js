@@ -118,41 +118,50 @@ function App() {
       <div className="bg-white flex min-h-screen my-0 mx-auto overflow-x-hidden relative shadow-xl shadow-gray-300 home-container">
         <Header />
         <main>
-          {!address && <ConnectWallet />}
-          {loading && <Loading />}
-          {tab === "home" && (
+          {!address ? (
+            <ConnectWallet />
+          ) : (
             <>
-              {!loading && address && events && events.length > 0 ? (
-                <div className="flex flex-col px-6 mt-20">
-                  <h4 className="mb-6">All events</h4>
-                  <div className="flex flex-col space-y-4">
-                    {events.map((event, index) => (
-                      <EventCard
-                        event={event}
-                        getTicket={getTicket}
-                        key={index}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <NoEvent />
+              {loading && <Loading />}
+              {tab === "home" && (
+                <>
+                  {!loading && address && events && events.length > 0 ? (
+                    <div className="flex flex-col px-6 mt-20">
+                      <h4 className="mb-6">All events</h4>
+                      <div className="flex flex-col space-y-4">
+                        {events.map((event, index) => (
+                          <EventCard
+                            event={event}
+                            getTicket={getTicket}
+                            key={index}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <NoEvent />
+                  )}
+                </>
               )}
-            </>
-          )}
-          {tab === "tickets" && (
-            <>
-              {!loading && address && tickets && tickets.length > 0 ? (
-                <div className="flex flex-col px-6 mt-20">
-                  <h4 className="mb-6">All tickets</h4>
-                  <div className="grid grid-cols-1  md:grid-cols-2 gap-10">
-                    {tickets.map((ticket, index) => (
-                      <TicketCard ticket={ticket} events={events} key={index} />
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <NoTicket />
+              {tab === "tickets" && (
+                <>
+                  {!loading && address && tickets && tickets.length > 0 ? (
+                    <div className="flex flex-col px-6 mt-20">
+                      <h4 className="mb-6">All tickets</h4>
+                      <div className="grid grid-cols-1  md:grid-cols-2 gap-10">
+                        {tickets.map((ticket, index) => (
+                          <TicketCard
+                            ticket={ticket}
+                            events={events}
+                            key={index}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <NoTicket />
+                  )}
+                </>
               )}
             </>
           )}
