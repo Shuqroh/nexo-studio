@@ -8,8 +8,6 @@ export default function TicketCard({ ticket, events }) {
       ? events.find((item) => item.index === parseInt(ticket.eventIndex))
       : null;
 
-  console.log(ticket);
-
   return (
     <div
       className="flex items-center justify-center bg-gray-100"
@@ -27,7 +25,7 @@ export default function TicketCard({ ticket, events }) {
         </div>
         <div className="py-4">
           <p className="mt-4 flex items-center justify-center text-4xl leading-none font-bold text-gray-900">
-            {event ? event.price : 0} CELO
+            #{ticket.tokenId.length > 1 ? ticket.tokenId : "0" + ticket.tokenId}
           </p>
           <p className="mt-2 flex items-center justify-center text-md leading-none font-normal text-gray-500">
             {event && event.title}
