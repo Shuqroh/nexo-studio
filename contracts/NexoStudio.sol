@@ -54,7 +54,7 @@ contract NexoStudio is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
         return tokenId;
     }
 
-    //Create NFT Functionality
+    //Create Ticket Functionality
     function createTicket(
         uint256 tokenId,
         uint256 eventIndex,
@@ -87,23 +87,20 @@ contract NexoStudio is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
         eventLength++;
     }
 
-    //Buy NFT Functionality
+    //Buy NFT Ticket Functionality
     function buyTicket(
         string memory uri,
         uint256 eventIndex,
         uint256 quantity
     ) public payable {
         address owner = events[eventIndex].owner;
+        uint256 currentQuantity = events[eventIndex].quantity;
 
-        require(
-            quantity > events[eventIndex].quantity,
-            "Please enter quantity less than remaining quantity"
-        );
-        uint256 amount = msg.value;
+        uint amount = msg.value;
         (bool success, ) = owner.call{value: amount}("");
         require(success, "Payment failed");
 
-        uint256 remainQuantity = events[eventIndex].quantity - quantity;
+        uint256 remainQuantity = currentQuantity - quantity;
         events[eventIndex].quantity = remainQuantity;
 
         safeMint(uri, eventIndex, quantity);
