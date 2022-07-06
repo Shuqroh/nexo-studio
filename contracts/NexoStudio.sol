@@ -75,7 +75,7 @@ contract NexoStudio is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
         string memory description,
         uint256 price,
         uint256 quantity
-    ) private {
+    ) public {
         events[eventLength] = EventStudio(
             title,
             image,
