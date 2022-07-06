@@ -1,7 +1,7 @@
 # Nexo-studio
 
 ## Demo
-[Demo link](https://iridescent-basbousa-fae39f.netlify.app/)
+[Demo link](https://nexo-studio.netlify.app/)
 
 ## Description
 
