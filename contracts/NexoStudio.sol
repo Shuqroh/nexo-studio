@@ -86,6 +86,18 @@ contract NexoStudio is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
         );
         eventLength++;
     }
+    
+    // Transfer ticket
+    
+    function makeTransfer
+    (address from, address to, uint256 tokenId)public{
+        require(tokenId >= 0, "Enter valid token id");
+        require(msg.sender == ownerOf(tokenId) || msg.sender == getApproved(tokenId), "Only the owner or an approved operator can perform this action");
+        require(to != address(0), "Enter a valid address");
+        _transfer(from, to, tokenId);
+        tickets[tokenId].owner = payable(to);
+    }
+
 
     //Buy NFT Ticket Functionality
     function buyTicket(
