@@ -11,6 +11,7 @@ Web3 based platform to manage events and tickets
 
 - `React.js`
 - `TailwindCSS`
+- `HeadlessUI`
 
 ## Installing
 
