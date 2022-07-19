@@ -11,12 +11,10 @@ contract NexoStudio is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
-
-    uint256 internal eventLength = 0;
+    Counters.Counter private eventLength;
+    Counters.Counter private owners;
 
     constructor() ERC721("NexoStudio", "NXST") {}
-
-    uint256 owners = 0;
 
     struct EventStudio {
         string title;
@@ -35,16 +33,43 @@ contract NexoStudio is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     }
 
     mapping(uint256 => EventStudio) private events;
+    mapping(uint256 => bool) private eventExists;
 
     mapping(uint256 => Ticket) private tickets;
+
+    event Bought(uint256 eventId, address user, uint256 ticketId);
+    event EventCreated(uint256 eventId, address owner);
+    event TransferTicket(uint256 ticketId, uint256 eventId, address to);
+
+    modifier canMint(
+        string memory uri,
+        uint256 eventIndex,
+        uint256 quantity
+    ) {
+        require(bytes(uri).length > 0, "Enter valid uri");
+        require(
+            quantity <= events[eventIndex].quantity,
+            "Number of tickets available is less than requested amount"
+        );
+        _;
+    }
+
+    modifier eventExist(uint256 eventId) {
+        require(eventExists[eventId], "Query of non existent event");
+        _;
+    }
 
     // mint an NFt
     function safeMint(
         string memory uri,
         uint256 eventIndex,
         uint256 quantity
-    ) public payable returns (uint256) {
-        require(bytes(uri).length > 0, "Enter valid uri");
+    )
+        internal
+        eventExist(eventIndex)
+        canMint(uri, eventIndex, quantity)
+        returns (uint256)
+    {
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _mint(msg.sender, tokenId);
@@ -59,7 +84,8 @@ contract NexoStudio is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
         uint256 tokenId,
         uint256 eventIndex,
         uint256 quantity
-    ) private {
+    ) private eventExist(eventIndex) {
+        require(_exists(tokenId));
         tickets[tokenId] = Ticket(
             tokenId,
             eventIndex,
@@ -76,7 +102,14 @@ contract NexoStudio is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
         uint256 price,
         uint256 quantity
     ) public {
-        events[eventLength] = EventStudio(
+        require(bytes(title).length > 0, "Invalid title");
+        require(bytes(image).length > 0, "Invalid image");
+        require(bytes(description).length > 0, "Invalid description");
+        require(price > 0, "Invalid price");
+        require(quantity > 0, "Invalid quantity");
+        uint256 id = eventLength.current();
+        eventLength.increment();
+        events[id] = EventStudio(
             title,
             image,
             description,
@@ -84,45 +117,79 @@ contract NexoStudio is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
             price,
             quantity
         );
-        eventLength++;
+        owners.increment();
+        eventExists[id] = true;
+        emit EventCreated(id, msg.sender);
     }
-    
+
+    function addTickets(uint256 eventIndex, uint256 amount)
+        public
+        eventExist(eventIndex)
+    {
+        require(
+            events[eventIndex].owner == msg.sender,
+            "Only the owner can do that"
+        );
+        events[eventIndex].quantity += amount;
+    }
+
     // Transfer ticket
-    
-    function makeTransfer
-    (address from, address to, uint256 tokenId)public{
-        require(tokenId >= 0, "Enter valid token id");
-        require(msg.sender == ownerOf(tokenId) || msg.sender == getApproved(tokenId), "Only the owner or an approved operator can perform this action");
+    function makeTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public {
+        require(tokenId >= 0 && _exists(tokenId), "Enter valid token id");
+        require(
+            msg.sender == ownerOf(tokenId) ||
+                msg.sender == getApproved(tokenId),
+            "Only the owner or an approved operator can perform this action"
+        );
         require(to != address(0), "Enter a valid address");
         _transfer(from, to, tokenId);
         tickets[tokenId].owner = payable(to);
+        emit TransferTicket(tokenId, tickets[tokenId].eventIndex, to);
     }
-
 
     //Buy NFT Ticket Functionality
     function buyTicket(
         string memory uri,
         uint256 eventIndex,
         uint256 quantity
-    ) public payable {
-        address owner = events[eventIndex].owner;
-        uint256 currentQuantity = events[eventIndex].quantity;
-
-        uint amount = msg.value;
-        (bool success, ) = owner.call{value: amount}("");
+    ) public payable canMint(uri, eventIndex, quantity) eventExist(eventIndex) {
+        EventStudio storage currentEvent = events[eventIndex];
+        uint256 amount = getTicketPrice(eventIndex, quantity);
+        require(
+            currentEvent.owner != msg.sender,
+            "You can't buy tickets from your own event"
+        );
+        require(amount == msg.value, "Insufficient funds to buy tickets");
+        (bool success, ) = currentEvent.owner.call{value: amount}("");
         require(success, "Payment failed");
-
-        uint256 remainQuantity = currentQuantity - quantity;
-        events[eventIndex].quantity = remainQuantity;
-
+        currentEvent.quantity -= quantity;
         safeMint(uri, eventIndex, quantity);
     }
 
     function getTicket(uint256 tokenId) public view returns (Ticket memory) {
+        require(_exists(tokenId));
         return tickets[tokenId];
     }
 
-    function getEvent(uint256 index) public view returns (EventStudio memory) {
+    function getTicketPrice(uint256 eventId, uint256 quantity)
+        public
+        view
+        eventExist(eventId)
+        returns (uint256)
+    {
+        return events[eventId].price * quantity;
+    }
+
+    function getEvent(uint256 index)
+        public
+        view
+        eventExist(index)
+        returns (EventStudio memory)
+    {
         return events[index];
     }
 
@@ -131,11 +198,11 @@ contract NexoStudio is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     }
 
     function getEventLength() public view returns (uint256) {
-        return eventLength;
+        return eventLength.current();
     }
 
     function getOwners() public view returns (uint256) {
-        return owners;
+        return owners.current();
     }
 
     function _beforeTokenTransfer(
